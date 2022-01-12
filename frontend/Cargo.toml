@@ -7,16 +7,22 @@ description = "MoonZoon demo"
 categories = ["MoonZoon", "example"]
 license = "MIT"
 readme = "../README.md"
-edition = "2018"
+edition = "2021"
 
 [lib]
 crate-type = ["cdylib"]
 
 [dependencies]
-zoon = { git = "https://github.com/MoonZoon/MoonZoon", rev = "457b8d1" }
-rand = { version = "0.8.3", features = ["small_rng", "getrandom"], default-features = false }
-getrandom = { version = "0.2", features = ["js"], default-features = false }
-
+zoon = { git = "https://github.com/MoonZoon/MoonZoon", rev="4e3f7b3"}
+rand = { version = "*", features = ["small_rng", "getrandom"], default-features = false }
+getrandom = { version = "*", features = ["js"], default-features = false }
+serde = "1.0.130"
+strum = { version = "0.20.0", default-features = false, features = ["derive"] }
+dominator = "0.5.22"
 [package.metadata.wasm-pack.profile.release]
 wasm-opt = ['-Oz']
-
+[dependencies.web-sys]
+version = "*"
+features = [
+    'CanvasRenderingContext2d',
+]

@@ -1,4 +1,6 @@
 target
 cargo_install_root
-mzoon*
+mzoon
 frontend/wasm-pack*
+*.env
+*.lock
