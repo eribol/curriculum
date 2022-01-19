@@ -17,7 +17,7 @@ use moon::actix_http::Response;
 
 async fn frontend() -> Frontend {
     Frontend::new()
-        .title("Libredu")
+        .title("Libredu - Curriculum")
         .default_styles(false)
         .append_to_head(r#"<link href="_api/public/css/bulmaswatch.min.css" rel="stylesheet"/>"#)
         .append_to_head(r#"<link href="_api/public/css/fontawesome/css/all.css" rel="stylesheet"/>"#)
@@ -29,18 +29,6 @@ async fn up_msg_handler(_req: UpMsgRequest<()>) {
 
 #[moon::main]
 async fn main() -> std::io::Result<()> {
-    /*
-    let pool = match PgPoolOptions::new()
-        .max_connections(5)
-        .connect(&env::var("DATABASE_URL").unwrap()).await{
-        Ok(db) => {
-            println!("db okey");
-            db}
-        Err(_) => {panic!("no db connection")}
-    };
-
-     */
-
     let service_config = |service_config: &mut ServiceConfig| {
         //service_config.service(hello);
     };

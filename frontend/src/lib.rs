@@ -1,3 +1,5 @@
+use std::sync::Arc;
+use dominator::traits::AsStr;
 use zoon::{
     web_sys::{CanvasRenderingContext2d, HtmlCanvasElement},
     *,
@@ -10,18 +12,36 @@ use zoon::console::log;
 //    States
 // ------ ------
 
-
-fn root() -> impl Element {
-    RawHtmlEl::new("div").attr("class", "columns").child(canvas()).child(toolbox())
+#[static_ref]
+fn names() -> &'static MutableVec<i32> {
+    MutableVec::new_with_values(vec![1,2,3])
 }
 
+fn root() -> impl Element {
+    RawHtmlEl::new("div").attr("class","columns").style("margin-top","1.5rem").style("margin-left","1.5rem").children_signal_vec(names().signal_vec_cloned().map(|n| sayilar(n))).child(yazi())
+    //<div class="columns" style="margin-top:1.5rem; margin-left:1.5rem" onclick="fonksiyonadi()">
+    // <button>Tıkla</button>
+    // </div>
+}
+
+fn sayilar(n: i32) -> impl Element{
+    Label::new().label(n.to_string())
+}
+fn yazi() -> impl Element{
+    Button::new().label("Tıkla").on_click(sayi_arttir)
+}
+
+fn sayi_arttir() {
+    let last = names().lock_mut().last().cloned();
+    if let Some(l) = last {
+        names().lock_mut().push(l+1);
+    }
+
+}
 #[wasm_bindgen(start)]
 pub fn start() {
     start_app("main", root);
 }
-
-
-
 
 
 
