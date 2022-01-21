@@ -1,11 +1,9 @@
-use std::sync::Arc;
-use dominator::traits::AsStr;
+mod router;
 use zoon::{
     web_sys::{CanvasRenderingContext2d, HtmlCanvasElement},
     *,
 };
-use crate::canvas::WidthFlagSet;
-use crate::canvas::HeightFlagSet;
+
 use zoon::console::log;
 
 // ------ ------
@@ -13,33 +11,73 @@ use zoon::console::log;
 // ------ ------
 
 #[static_ref]
-fn names() -> &'static MutableVec<i32> {
-    MutableVec::new_with_values(vec![1,2,3])
+fn get_user() -> &'static Mutable<Option<User>> {
+    Mutable::new(None)
 }
 
+#[static_ref]
+fn page_id() -> &'static Mutable<Page> {
+    Mutable::new(Page::Unknown)
+}
+
+pub fn set_page_id(new_page_id: Page) {
+    page_id().set_neq(new_page_id);
+}
+
+#[derive(Clone, Copy, PartialEq, PartialOrd, Default)]
+pub struct User{
+    id: i32
+}
+
+#[derive(Clone, Copy, PartialEq, PartialOrd)]
+pub enum Page{
+    Signin,
+    Login,
+    Home,
+    Unknown
+}
 fn root() -> impl Element {
-    RawHtmlEl::new("div").attr("class","columns").style("margin-top","1.5rem").style("margin-left","1.5rem").children_signal_vec(names().signal_vec_cloned().map(|n| sayilar(n))).child(yazi())
-    //<div class="columns" style="margin-top:1.5rem; margin-left:1.5rem" onclick="fonksiyonadi()">
-    // <button>Tıkla</button>
-    // </div>
+    RawHtmlEl::new("div")
+        .style("margin-top","1.5rem")
+        .style("margin-left","1.5rem")
+        .child(header())
+        .child(page())
 }
 
-fn sayilar(n: i32) -> impl Element{
-    Label::new().label(n.to_string())
-}
-fn yazi() -> impl Element{
-    Button::new().label("Tıkla").on_click(sayi_arttir)
-}
-
-fn sayi_arttir() {
-    let last = names().lock_mut().last().cloned();
-    if let Some(l) = last {
-        names().lock_mut().push(l+1);
-    }
+fn page() -> impl Element{
+    El::new().child_signal(page_id().signal().map(|page|
+        match page{
+            Page::Home => Label::new().label("Anasayfa"),
+            Page::Login => Label::new().label("Login"),
+            Page::Signin => Label::new().label("Signin"),
+            _ => Label::new().label("Diğer Sayfalar"),
+        }
+    ))
 
 }
+fn header() -> impl Element{
+    RawHtmlEl::new("nav").attr("class","navbar")
+        .child(
+            RawHtmlEl::new("div").attr("class","navbar-menu")
+                .child(left_menu())
+                .child(right_menu())
+        )
+}
+
+fn left_menu() -> impl Element{
+    RawHtmlEl::new("div").attr("class","navbar-start")
+        .child(Link::new().label("Libredu").to("/").update_raw_el(|raw| raw.attr("class","navbar-item")))
+}
+
+fn right_menu() -> impl Element{
+    RawHtmlEl::new("div").attr("class","navbar-end")
+        .child(Link::new().label("Login").to("/login").update_raw_el(|raw| raw.attr("class","navbar-item")))
+        .child(Link::new().label("Sign in").to("/signin").update_raw_el(|raw| raw.attr("class","navbar-item")))
+}
+
 #[wasm_bindgen(start)]
 pub fn start() {
+    crate::router::router();
     start_app("main", root);
 }
 
