@@ -1,7 +1,6 @@
 use std::collections::VecDeque;
 use zoon::{println, *};
-use crate::{Page, page_id, set_page_id};
-use dominator::routing::url;
+use crate::{Page, page_id, set_page_id, get_user};
 
 // ------ route_history ------
 
@@ -39,10 +38,10 @@ pub fn router() -> &'static Router<Route> {
 
         match route {
             Route::Login => {
-                set_page_id(Page::Login);
-            }
-            Route::Signin => {
-                set_page_id(Page::Signin);
+                if get_user().map(Option::is_some) {
+                    return router().replace(Route::Root)
+                }
+                set_page_id(Page::Login)
             }
             Route::Root => {
                 set_page_id(Page::Home);
@@ -56,8 +55,6 @@ pub fn router() -> &'static Router<Route> {
 #[route]
 #[derive(Clone)]
 pub enum Route {
-    #[route("signin")]
-    Signin,
     #[route("login")]
     Login,
     #[route()]

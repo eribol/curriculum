@@ -1,10 +1,13 @@
 mod router;
+mod pages;
+
 use zoon::{
     web_sys::{CanvasRenderingContext2d, HtmlCanvasElement},
     *,
 };
 
 use zoon::console::log;
+use crate::pages::{home, login};
 
 // ------ ------
 //    States
@@ -24,14 +27,14 @@ pub fn set_page_id(new_page_id: Page) {
     page_id().set_neq(new_page_id);
 }
 
-#[derive(Clone, Copy, PartialEq, PartialOrd, Default)]
+#[derive(Clone, PartialEq, PartialOrd, Default)]
 pub struct User{
-    id: i32
+    id: i32,
+    first_name: String
 }
 
 #[derive(Clone, Copy, PartialEq, PartialOrd)]
 pub enum Page{
-    Signin,
     Login,
     Home,
     Unknown
@@ -47,13 +50,11 @@ fn root() -> impl Element {
 fn page() -> impl Element{
     El::new().child_signal(page_id().signal().map(|page|
         match page{
-            Page::Home => Label::new().label("Anasayfa"),
-            Page::Login => Label::new().label("Login"),
-            Page::Signin => Label::new().label("Signin"),
-            _ => Label::new().label("Diğer Sayfalar"),
+            Page::Home => home::home().into_raw_element(),
+            Page::Login => login::home().into_raw_element(),
+            _ => Label::new().label("Diğer Sayfalar").into_raw_element(),
         }
     ))
-
 }
 fn header() -> impl Element{
     RawHtmlEl::new("nav").attr("class","navbar")
@@ -71,8 +72,16 @@ fn left_menu() -> impl Element{
 
 fn right_menu() -> impl Element{
     RawHtmlEl::new("div").attr("class","navbar-end")
-        .child(Link::new().label("Login").to("/login").update_raw_el(|raw| raw.attr("class","navbar-item")))
-        .child(Link::new().label("Sign in").to("/signin").update_raw_el(|raw| raw.attr("class","navbar-item")))
+        .child_signal(get_user().signal_ref(|user|
+            match user{
+                Some(u) => Link::new().label(&u.first_name).to("/login")
+                    .update_raw_el(|raw| raw.attr("class","navbar-item")),
+                None => Link::new().label("Login").to("/login")
+                    .update_raw_el(|raw| raw.attr("class","navbar-item"))
+            }
+        )
+        )
+
 }
 
 #[wasm_bindgen(start)]
